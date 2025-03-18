@@ -101,16 +101,12 @@ const UploadModal = ({ visible, onClose, onSend }) => {
               </View>
             </View>
             
-            {/* This is the bottom toolbar that will move with the keyboard */}
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={styles.keyboardAvoidingView}
-              keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
-            >
+            {/* This is the fixed input container that will move with the keyboard */}
+            {Platform.OS === 'ios' ? (
               <Animated.View 
                 style={[
                   styles.inputContainer,
-                  { bottom: isKeyboardVisible ? keyboardHeight : 0 }
+                  { bottom: keyboardHeight }
                 ]}
               >
                 <TextInput
@@ -132,7 +128,33 @@ const UploadModal = ({ visible, onClose, onSend }) => {
                   <Send width={24} height={24} color="#FFF" />
                 </TouchableOpacity>
               </Animated.View>
-            </KeyboardAvoidingView>
+            ) : (
+              <KeyboardAvoidingView
+                behavior="position"
+                keyboardVerticalOffset={0}
+              >
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Add a caption..."
+                    value={message}
+                    onChangeText={setMessage}
+                    multiline
+                    maxLength={200}
+                  />
+                  <TouchableOpacity 
+                    style={[
+                      styles.sendButton, 
+                      { opacity: message.trim() ? 1 : 0.5 }
+                    ]} 
+                    onPress={handleSend}
+                    disabled={!message.trim()}
+                  >
+                    <Send width={24} height={24} color="#FFF" />
+                  </TouchableOpacity>
+                </View>
+              </KeyboardAvoidingView>
+            )}
           </View>
         </TouchableOpacity>
       </SafeAreaView>
@@ -209,9 +231,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: '#999',
   },
-  keyboardAvoidingView: {
-    width: '100%',
-  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -219,9 +238,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#EFEFEF',
     backgroundColor: 'white',
-    position: 'absolute',
-    left: 0,
-    right: 0,
+    width: '100%',
   },
   input: {
     flex: 1,
