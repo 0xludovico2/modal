@@ -3,6 +3,7 @@
 1. **Bottom Toolbar Positioning**:
 
 The toolbar is positioned at the bottom of the screen when the keyboard is not visible
+
 Uses `position: 'absolute'` with `bottom: 0` when keyboard is hidden
 
 
