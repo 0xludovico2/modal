@@ -6,20 +6,19 @@ import {
   Text,
   StyleSheet,
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   TextInput,
-  Dimensions,
   Animated,
   SafeAreaView,
+  Platform,
+  InputAccessoryView,
 } from 'react-native';
 import { Camera, Image, X, Send, Paperclip } from 'react-native-feather';
 
 const UploadModal = ({ visible, onClose, onSend }) => {
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [message, setMessage] = useState('');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
-  const bottomPosition = useRef(new Animated.Value(0)).current;
+  const inputAccessoryViewID = "uniqueID";
 
   useEffect(() => {
     const keyboardWillShowListener = Keyboard.addListener(
@@ -27,11 +26,6 @@ const UploadModal = ({ visible, onClose, onSend }) => {
       (e) => {
         setKeyboardVisible(true);
         setKeyboardHeight(e.endCoordinates.height);
-        Animated.timing(bottomPosition, {
-          toValue: e.endCoordinates.height,
-          duration: 250,
-          useNativeDriver: false,
-        }).start();
       }
     );
 
@@ -40,11 +34,6 @@ const UploadModal = ({ visible, onClose, onSend }) => {
       () => {
         setKeyboardVisible(false);
         setKeyboardHeight(0);
-        Animated.timing(bottomPosition, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: false,
-        }).start();
       }
     );
 
@@ -64,6 +53,31 @@ const UploadModal = ({ visible, onClose, onSend }) => {
   const dismissKeyboard = () => {
     Keyboard.dismiss();
   };
+
+  // Input toolbar component
+  const renderInputToolbar = () => (
+    <View style={styles.inputContainer}>
+      <TextInput
+        style={styles.input}
+        placeholder="Add a caption..."
+        value={message}
+        onChangeText={setMessage}
+        multiline
+        maxLength={200}
+        inputAccessoryViewID={Platform.OS === 'ios' ? inputAccessoryViewID : undefined}
+      />
+      <TouchableOpacity 
+        style={[
+          styles.sendButton, 
+          { opacity: message.trim() ? 1 : 0.5 }
+        ]} 
+        onPress={handleSend}
+        disabled={!message.trim()}
+      >
+        <Send width={24} height={24} color="#FFF" />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <Modal
@@ -101,63 +115,18 @@ const UploadModal = ({ visible, onClose, onSend }) => {
               </View>
             </View>
             
-            {/* This is the fixed input container that will move with the keyboard */}
-            {Platform.OS === 'ios' ? (
-              <Animated.View 
-                style={[
-                  styles.inputContainer,
-                  { bottom: keyboardHeight }
-                ]}
-              >
-                <TextInput
-                  style={styles.input}
-                  placeholder="Add a caption..."
-                  value={message}
-                  onChangeText={setMessage}
-                  multiline
-                  maxLength={200}
-                />
-                <TouchableOpacity 
-                  style={[
-                    styles.sendButton, 
-                    { opacity: message.trim() ? 1 : 0.5 }
-                  ]} 
-                  onPress={handleSend}
-                  disabled={!message.trim()}
-                >
-                  <Send width={24} height={24} color="#FFF" />
-                </TouchableOpacity>
-              </Animated.View>
-            ) : (
-              <KeyboardAvoidingView
-                behavior="position"
-                keyboardVerticalOffset={0}
-              >
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Add a caption..."
-                    value={message}
-                    onChangeText={setMessage}
-                    multiline
-                    maxLength={200}
-                  />
-                  <TouchableOpacity 
-                    style={[
-                      styles.sendButton, 
-                      { opacity: message.trim() ? 1 : 0.5 }
-                    ]} 
-                    onPress={handleSend}
-                    disabled={!message.trim()}
-                  >
-                    <Send width={24} height={24} color="#FFF" />
-                  </TouchableOpacity>
-                </View>
-              </KeyboardAvoidingView>
-            )}
+            {/* For Android, render the input toolbar at the bottom */}
+            {Platform.OS === 'android' && renderInputToolbar()}
           </View>
         </TouchableOpacity>
       </SafeAreaView>
+
+      {/* For iOS, use InputAccessoryView to ensure the input sticks to the keyboard */}
+      {Platform.OS === 'ios' && (
+        <InputAccessoryView nativeID={inputAccessoryViewID}>
+          {renderInputToolbar()}
+        </InputAccessoryView>
+      )}
     </Modal>
   );
 };
