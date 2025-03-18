@@ -1,15 +1,3 @@
-Thought for 3 secondsI'll create a reusable upload modal component for React Native that handles keyboard positioning correctly. This will work across different screen sizes and properly position the toolbar above the keyboard when it appears.
-
-```javascriptreact file="components/UploadModal.jsx"
-...
-```
-
-Now let's create a usage example to demonstrate how to implement this component:
-
-```javascriptreact file="App.jsx"
-...
-```
-
 ### Key Features
 
 1. **Bottom Toolbar Positioning**:
